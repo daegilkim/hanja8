@@ -7,13 +7,16 @@
     <!-- 획순 가이드 애니메이션을 위한 Hanzi Writer 라이브러리 추가 -->
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <style>
+        /* 웹 브라우저 환경에 구애받지 않도록 궁서체 웹 폰트 임베드 추가 */
+        @import url('https://fonts.googleapis.com/css2?family=Gungsuh&display=swap');
+
         :root {
             --primary-color: #4a90e2;
             --success-color: #4caf50;
             --error-color: #f44336;
             --error-bg: #ffebee;
             --bg-color: #f4f7f6;
-            --hanja-font: '궁서', 'Gungsuh', '궁서체', 'GungsuhChe', serif;
+            --hanja-font: 'Gungsuh', '궁서', '궁서체', serif;
         }
         
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -27,7 +30,7 @@
         .hidden { display: none !important; }
         .screen { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; height: 100%; }
 
-        /* ==================== 타이틀 화면 (버튼 크기 대폭 확대) ==================== */
+        /* ==================== 타이틀 화면 ==================== */
         #title-screen { justify-content: center; text-align: center; padding: 20px; background: white; width: 100%; flex-grow: 1; }
         #title-screen h1 { color: #333; margin-bottom: 40px; font-size: 2.8rem; }
         #title-screen h1 span { color: var(--primary-color); }
@@ -380,13 +383,12 @@
     let gameTimeouts = [];
     let totalTime = 0, timeLeft = 0, timerInterval = null;
 
-    // 2. 닉네임 입력 및 저장/로드 기능 정상 복구 
     function startMemoryGame() {
         const nickname = document.getElementById('nickname-input').value.trim();
         if(!nickname) { alert('아이디(닉네임)를 입력해주세요!'); return; }
         
         currentUser = nickname;
-        memLevel = loadProgress(currentUser); // 저장된 레벨 불러오기
+        memLevel = loadProgress(currentUser);
 
         initAudio();
         document.getElementById('current-user-display').innerText = currentUser;
@@ -589,7 +591,6 @@
         clearInterval(timerInterval); 
         sounds.clear();
         
-        // 닉네임 기반으로 레벨 세이브
         if(memLevel < maxLevel) {
             saveProgress(currentUser, memLevel + 1);
         }
@@ -645,14 +646,16 @@
             
             this.ctx.lineCap = 'round';
             this.ctx.lineJoin = 'round';
-            this.ctx.lineWidth = size * 0.08; 
+            // 선 굵기 반으로 축소 (0.08 -> 0.04)
+            this.ctx.lineWidth = size * 0.04; 
             this.ctx.strokeStyle = '#333';
 
             this.bgCtx.clearRect(0, 0, size, size);
             this.ctx.clearRect(0, 0, size, size);
 
             if (this.showGuide && hanjaItem) {
-                this.bgCtx.font = `${size * 0.7}px ${getComputedStyle(document.documentElement).getPropertyValue('--hanja-font')}`;
+                const fontValue = getComputedStyle(document.documentElement).getPropertyValue('--hanja-font').trim();
+                this.bgCtx.font = `${size * 0.7}px ${fontValue}`;
                 this.bgCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
                 this.bgCtx.textAlign = 'center';
                 this.bgCtx.textBaseline = 'middle';
@@ -738,7 +741,6 @@
         document.getElementById('learn-progress').innerText = `${learnIndex + 1} / 50`;
         resizeCanvases();
         
-        // 만약 획순 가이드 창이 열려있다면 새로고침
         if(isGuideOpen) openStrokeGuide();
     }
 
@@ -762,7 +764,7 @@
         }
     }
 
-    /* ==================== 3. 획순 가이드 애니메이션 (Hanzi Writer) ==================== */
+    /* ==================== 획순 가이드 애니메이션 (Hanzi Writer) ==================== */
     let strokeWriter = null;
     let isGuideOpen = false;
 
@@ -772,16 +774,15 @@
         document.getElementById('stroke-overlay').classList.remove('hidden');
 
         const target = document.getElementById('writer-target');
-        target.innerHTML = ''; // 기존에 생성된 캔버스 삭제
+        target.innerHTML = '';
 
-        // HanziWriter 인스턴스 생성
         strokeWriter = HanziWriter.create('writer-target', item.h, {
             width: 200,
             height: 200,
             padding: 10,
             showOutline: true,
-            strokeAnimationSpeed: 1.5, // 긋는 속도
-            delayBetweenStrokes: 150,  // 획 사이 딜레이
+            strokeAnimationSpeed: 1.5,
+            delayBetweenStrokes: 150,
             radicalColor: '#337ab7'
         });
 
@@ -792,7 +793,6 @@
         if(!isGuideOpen || !strokeWriter) return;
         strokeWriter.animateCharacter({
             onComplete: function() {
-                // 한 글자 애니메이션이 끝난 후 1.5초 뒤에 무한 반복
                 setTimeout(() => {
                     if(isGuideOpen) loopStrokeAnimation();
                 }, 1500);
