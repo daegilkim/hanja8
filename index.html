@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>한자 8급 통합 학습기</title>
+    <!-- 획순 가이드 애니메이션을 위한 Hanzi Writer 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --error-bg: #ffebee;
+            --bg-color: #f4f7f6;
+            --hanja-font: '궁서', 'Gungsuh', '궁서체', 'GungsuhChe', serif;
+        }
+        
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: var(--bg-color); margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden;
+        }
+
+        .hidden { display: none !important; }
+        .screen { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; height: 100%; }
+
+        /* ==================== 타이틀 화면 (버튼 크기 대폭 확대) ==================== */
+        #title-screen { justify-content: center; text-align: center; padding: 20px; background: white; width: 100%; flex-grow: 1; }
+        #title-screen h1 { color: #333; margin-bottom: 40px; font-size: 2.8rem; }
+        #title-screen h1 span { color: var(--primary-color); }
+        .input-group { margin-bottom: 30px; width: 100%; display: flex; flex-direction: column; align-items: center;}
+        input[type="text"] {
+            width: 90%; max-width: 350px; padding: 18px; font-size: 1.3rem; border: 2px solid #ddd;
+            border-radius: 10px; text-align: center; outline: none; user-select: auto; -webkit-user-select: auto;
+        }
+        input[type="text"]:focus { border-color: var(--primary-color); }
+        .saved-info { margin-top: 15px; font-size: 1rem; color: #666; min-height: 20px; font-weight: bold; }
+        
+        .menu-buttons { display: flex; flex-direction: column; gap: 20px; width: 90%; max-width: 350px; margin: 0 auto; }
+        .menu-btn { 
+            padding: 22px; font-size: 1.5rem; font-weight: bold; border: none; cursor: pointer;
+            background: var(--primary-color); color: white; border-radius: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            transition: transform 0.1s;
+        }
+        .menu-btn.learn { background: #ff9800; }
+        .menu-btn:active { transform: scale(0.95); }
+
+        /* 공통 헤더 */
+        .game-header {
+            width: 100%; text-align: center; background: white; padding: 10px;
+            border-bottom: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; flex-shrink: 0;
+        }
+        .header-controls {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 10px; margin-bottom: 8px;
+        }
+        .nav-btn {
+            padding: 6px 12px; font-size: 0.9rem; border: none; border-radius: 5px; cursor: pointer;
+            background: #999; color: white; font-weight: bold;
+        }
+        .nav-btn.restart { background: #00bcd4; }
+        .nav-btn.sound { background: white; color: #333; border: 1px solid #ddd; font-size: 1.1rem; padding: 4px 8px; }
+
+        /* ==================== 메모리 게임 스타일 ==================== */
+        #game-screen { padding-bottom: 10px; }
+        .memory-info { text-align: center; margin-bottom: 5px; }
+        .memory-info h2 { margin: 0 0 2px 0; font-size: 1.1rem; color: #333; }
+        .memory-info p { margin: 0; font-size: 0.85rem; color: #666; }
+        
+        #timer-wrapper { width: 80%; max-width: 300px; margin: 5px auto 0; text-align: center;}
+        #timer-text { font-size: 1rem; font-weight: bold; color: var(--success-color); margin-bottom: 5px; transition: color 0.3s; }
+        #timer-text.danger { color: var(--error-color) !important; }
+        #progress-bg { width: 100%; height: 12px; background: #e0e0e0; border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        #progress-bar { width: 100%; height: 100%; background: var(--success-color); transition: width 0.3s linear, background-color 0.3s; }
+        #progress-bar.danger { background: var(--error-color) !important; }
+
+        .shake-animation { animation: shake 0.4s; }
+        .shake-animation #timer-text { color: var(--error-color) !important; }
+        .shake-animation #progress-bar { background: var(--error-color) !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
+
+        #board-container { width: 100%; flex-grow: 1; min-height: 0; padding: 0 10px 5px 10px; }
+        #board { display: grid; width: 100%; height: 100%; gap: 6px; place-content: center; }
+        .card { width: 100%; height: 100%; cursor: pointer; position: relative; touch-action: manipulation; perspective: 1000px; }
+        .card-inner { width: 100%; height: 100%; transition: transform 0.4s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; position: absolute; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card-back { background: var(--primary-color); border: 2px solid #357abd; background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 10px, transparent 10px, transparent 20px); }
+        .card-back::after { content: '漢'; font-size: min(8vmin, 2rem); color: rgba(255, 255, 255, 0.8); font-weight: bold; font-family: var(--hanja-font); }
+        .card-front { background: white; color: #333; transform: rotateY(180deg); border: 2px solid #ddd; padding: 2px; }
+        .card-front .hanja { font-size: min(8vmin, 2.5rem); font-weight: bold; margin-bottom: 2px; line-height: 1; font-family: var(--hanja-font); }
+        .card-front .meaning { font-size: min(3.5vmin, 1rem); color: #555; text-align: center; line-height: 1.1; word-break: keep-all; }
+        .card.matched .card-front { background: #e8f5e9; border-color: var(--success-color); opacity: 0.8; }
+        .card.error .card-front { background: var(--error-bg); border-color: var(--error-color); color: var(--error-color); }
+
+        /* ==================== 한자 학습 스타일 ==================== */
+        #learn-screen { background-color: var(--bg-color); width: 100%; display: flex; flex-direction: column; }
+        .learn-header { text-align: center; padding: 10px 0; }
+        .learn-header h2 { margin: 0 0 5px 0; color: var(--primary-color); font-size: 1.6rem; }
+        .learn-header p { margin: 0; color: #666; font-size: 1rem; }
+
+        .learn-content {
+            flex-grow: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start; padding: 10px; width: 100%;
+            overflow-y: auto;
+        }
+
+        .box-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 15px; width: 100%; max-width: 450px; }
+        .ref-box {
+            grid-column: 1 / -1; background: white; border: 2px solid #ddd; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            aspect-ratio: 2.5 / 1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .ref-box .hanja { font-family: var(--hanja-font); font-size: 4.5rem; color: #333; }
+
+        .canvas-wrapper {
+            position: relative; width: 100%; aspect-ratio: 1 / 1;
+            background: white; border: 2px dashed #ccc; border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); touch-action: none;
+        }
+        .canvas-wrapper::before, .canvas-wrapper::after { content: ''; position: absolute; background: #eee; z-index: 0; pointer-events: none; }
+        .canvas-wrapper::before { top: 50%; left: 0; width: 100%; height: 2px; transform: translateY(-50%); }
+        .canvas-wrapper::after { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50%); }
+
+        .canvas-wrapper canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; z-index: 1; }
+        .draw-canvas { z-index: 2 !important; cursor: crosshair; }
+
+        .box-label {
+            position: absolute; top: -12px; left: 10px; background: #ff9800; color: white;
+            font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; z-index: 3;
+        }
+
+        .learn-controls { display: flex; gap: 8px; width: 100%; max-width: 450px; margin-top: 20px; }
+        .learn-controls button {
+            flex: 1; padding: 12px 0; font-size: 1.1rem; cursor: pointer; border: none;
+            border-radius: 8px; color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #guide-btn { background: #2196f3; }
+        #clear-btn { background: #9e9e9e; }
+        #next-btn { background: #ff9800; }
+        
+        /* 공통 오버레이 */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.8); color: white; z-index: 300; padding: 20px; text-align: center;
+        }
+        .overlay h1 { font-size: 2rem; margin-bottom: 15px; white-space: pre-line; line-height: 1.3; }
+        .phase-overlay { background: rgba(0,0,0,0.3); pointer-events: none; z-index: 200; transition: opacity 0.3s; }
+        .phase-msg { background: rgba(255, 255, 255, 0.95); color: #333; padding: 20px 30px; border-radius: 15px; font-size: clamp(1.2rem, 5vw, 2rem); font-weight: bold; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s; }
+        @keyframes popIn { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* 획순 가이드 모달 박스 */
+        .guide-modal {
+            background: white; padding: 25px; border-radius: 15px; text-align: center; color: #333;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .guide-modal h2 { margin: 0 0 15px 0; font-size: 1.5rem; color: var(--primary-color); }
+        #writer-target {
+            width: 200px; height: 200px; margin: 0 auto 20px;
+            background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px;
+            background-image: linear-gradient(#eee 2px, transparent 2px), linear-gradient(90deg, #eee 2px, transparent 2px);
+            background-size: 50% 50%; background-position: center center;
+        }
+
+        button { touch-action: manipulation; }
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <!-- 타이틀 화면 -->
+    <div id="title-screen" class="screen">
+        <h1>한자 8급<br><span>통합 학습기</span></h1>
+        
+        <div class="input-group">
+            <input type="text" id="nickname-input" placeholder="이름 (메모리 게임용)" oninput="checkSavedData()">
+            <div class="saved-info" id="saved-info-text"></div>
+        </div>
+
+        <div class="menu-buttons">
+            <button class="menu-btn" onclick="startMemoryGame()">🎮 메모리 게임하기</button>
+            <button class="menu-btn learn" onclick="startLearning()">✍️ 한자 쓰기 연습</button>
+        </div>
+    </div>
+
+    <!-- ==================== 메모리 게임 화면 ==================== -->
+    <div id="memory-screen" class="screen hidden">
+        <div class="game-header">
+            <div class="header-controls">
+                <button class="nav-btn" onclick="goHome()">🏠 홈으로</button>
+                <button class="nav-btn restart" onclick="restartMemory()">🔄 다시하기</button>
+                <button id="sound-btn" class="nav-btn sound" onclick="toggleSound()">🔊</button>
+            </div>
+            <div class="memory-info">
+                <h2 id="level-title">1단계</h2>
+                <p>사용자: <strong id="current-user-display"></strong> | 남은 짝: <strong id="pairs-left">0</strong> / <span id="total-pairs">0</span></p>
+            </div>
+            <div id="timer-wrapper">
+                <div id="timer-text">⏳ 남은 시간: <span id="time-left">0</span>초</div>
+                <div id="progress-bg"><div id="progress-bar"></div></div>
+            </div>
+        </div>
+        <div id="board-container">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <!-- ==================== 한자 학습 화면 ==================== -->
+    <div id="learn-screen" class="screen hidden">
+        <div class="game-header">
+            <div class="header-controls">
+                <button class="nav-btn" onclick="goHome()">🏠 홈으로</button>
+                <button class="nav-btn restart" onclick="restartLearning()">🔄 처음부터 섞기</button>
+            </div>
+        </div>
+        
+        <div class="learn-content">
+            <div class="learn-header">
+                <h2 id="learn-meaning">한 일</h2>
+                <p id="learn-progress">1 / 50</p>
+            </div>
+
+            <div class="box-grid">
+                <!-- 1. 원본 한자 박스 -->
+                <div class="ref-box">
+                    <span class="hanja" id="learn-hanja">一</span>
+                </div>
+
+                <!-- 2. 가이드라인 있는 캔버스 -->
+                <div class="canvas-wrapper">
+                    <div class="box-label">가이드 O</div>
+                    <canvas class="bg-canvas" id="bg-canvas-1"></canvas>
+                    <canvas class="draw-canvas" id="draw-canvas-1"></canvas>
+                </div>
+
+                <!-- 3. 가이드라인 없는 캔버스 -->
+                <div class="canvas-wrapper">
+                    <div class="box-label">가이드 X</div>
+                    <canvas class="bg-canvas" id="bg-canvas-2"></canvas>
+                    <canvas class="draw-canvas" id="draw-canvas-2"></canvas>
+                </div>
+            </div>
+
+            <div class="learn-controls">
+                <button id="guide-btn" onclick="openStrokeGuide()">획순 보기</button>
+                <button id="clear-btn" onclick="clearCanvases()">지우기</button>
+                <button id="next-btn" onclick="nextLearnHanja()">다음 한자 ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 오버레이 요소들 -->
+    <div id="phase-overlay" class="overlay phase-overlay hidden">
+        <div id="phase-msg" class="phase-msg"></div>
+    </div>
+
+    <div id="result-overlay" class="overlay hidden">
+        <h1 id="overlay-msg">클리어!</h1>
+        <button class="menu-btn learn" id="overlay-btn" style="margin-top:20px; font-size:1.2rem; padding: 15px 25px;"></button>
+    </div>
+
+    <!-- 획순 가이드 팝업 모달 -->
+    <div id="stroke-overlay" class="overlay hidden">
+        <div class="guide-modal">
+            <h2>✍️ 올바른 획순</h2>
+            <!-- HanziWriter가 렌더링 될 공간 -->
+            <div id="writer-target"></div>
+            <button onclick="closeStrokeGuide()" style="padding:12px 30px; font-size:1.1rem; background:#f44336; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">닫기</button>
+        </div>
+    </div>
+
+<script>
+    /* ==================== 공통 데이터 및 설정 ==================== */
+    const hanja8 = [
+        {h:"一", m:"한 일"}, {h:"二", m:"두 이"}, {h:"三", m:"석 삼"}, {h:"四", m:"넉 사"}, {h:"五", m:"다섯 오"},
+        {h:"六", m:"여섯 육"}, {h:"七", m:"일곱 칠"}, {h:"八", m:"여덟 팔"}, {h:"九", m:"아홉 구"}, {h:"十", m:"열 십"},
+        {h:"東", m:"동녘 동"}, {h:"西", m:"서녘 서"}, {h:"南", m:"남녘 남"}, {h:"北", m:"북녘 북"},
+        {h:"木", m:"나무 목"}, {h:"火", m:"불 화"}, {h:"土", m:"흙 토"}, {h:"金", m:"쇠 금"}, {h:"水", m:"물 수"},
+        {h:"月", m:"달 월"}, {h:"日", m:"날 일"}, {h:"山", m:"뫼 산"}, {h:"川", m:"내 천"},
+        {h:"父", m:"아비 부"}, {h:"母", m:"어미 모"}, {h:"兄", m:"맏 형"}, {h:"弟", m:"아우 제"}, {h:"男", m:"사내 남"}, {h:"女", m:"여자 녀"},
+        {h:"王", m:"임금 왕"}, {h:"國", m:"나라 국"}, {h:"軍", m:"군사 군"}, {h:"民", m:"백성 민"},
+        {h:"大", m:"큰 대"}, {h:"中", m:"가운데 중"}, {h:"小", m:"작을 소"},
+        {h:"靑", m:"푸를 청"}, {h:"白", m:"흰 백"},
+        {h:"學", m:"배울 학"}, {h:"校", m:"학교 교"}, {h:"先", m:"먼저 선"}, {h:"生", m:"날 생"},
+        {h:"年", m:"해 년"}, {h:"室", m:"집 실"}, {h:"萬", m:"일만 만"}, {h:"長", m:"길 장"},
+        {h:"寸", m:"마디 촌"}, {h:"正", m:"바를 정"}, {h:"全", m:"온전 전"}, {h:"韓", m:"한국 한"}
+    ];
+
+    const SAVE_KEY = 'hanja8_saved_data';
+    let currentUser = '';
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    function goHome() {
+        clearGameTimers();
+        switchScreen('title-screen');
+    }
+
+    function loadProgress(nickname) {
+        const data = JSON.parse(localStorage.getItem(SAVE_KEY)) || {};
+        return data[nickname] || 1;
+    }
+
+    function saveProgress(nickname, level) {
+        const data = JSON.parse(localStorage.getItem(SAVE_KEY)) || {};
+        if (!data[nickname] || data[nickname] < level) {
+            data[nickname] = level;
+            localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+        }
+    }
+
+    function checkSavedData() {
+        const nickname = document.getElementById('nickname-input').value.trim();
+        const info = document.getElementById('saved-info-text');
+        if(nickname === '') { info.innerText = ''; return; }
+        const savedLevel = loadProgress(nickname);
+        info.innerText = savedLevel > 1 ? `저장된 기록: ${savedLevel}단계부터 시작` : '새로운 플레이어: 1단계부터 시작';
+    }
+
+    /* ==================== 사운드 (Web Audio API) ==================== */
+    let audioCtx;
+    let soundEnabled = true;
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, delay = 0) {
+        if (!soundEnabled || !audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+    }
+
+    const sounds = {
+        flip: () => playTone(300, 'sine', 0.1),
+        match: () => { playTone(523, 'sine', 0.1); playTone(659, 'sine', 0.2, 0.1); },
+        fail: () => playTone(150, 'sawtooth', 0.2),
+        clear: () => { playTone(440, 'square', 0.1, 0); playTone(554, 'square', 0.1, 0.15); playTone(659, 'square', 0.1, 0.3); playTone(880, 'square', 0.4, 0.45); },
+        start: () => playTone(784, 'sine', 0.2),
+        gameover: () => { playTone(300, 'sawtooth', 0.3); playTone(250, 'sawtooth', 0.4, 0.3); },
+        tick: () => playTone(1000, 'triangle', 0.05)
+    };
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        document.getElementById('sound-btn').innerText = soundEnabled ? '🔊' : '🔇';
+    }
+
+    /* ==================== 메모리 게임 로직 ==================== */
+    const PENALTY_SEC = 3; 
+    let memLevel = 1;
+    const maxLevel = 10;
+    let totalPairs = 0, matchedPairs = 0;
+    let firstCard = null, secondCard = null, lockBoard = false;
+    let gameTimeouts = [];
+    let totalTime = 0, timeLeft = 0, timerInterval = null;
+
+    // 2. 닉네임 입력 및 저장/로드 기능 정상 복구 
+    function startMemoryGame() {
+        const nickname = document.getElementById('nickname-input').value.trim();
+        if(!nickname) { alert('아이디(닉네임)를 입력해주세요!'); return; }
+        
+        currentUser = nickname;
+        memLevel = loadProgress(currentUser); // 저장된 레벨 불러오기
+
+        initAudio();
+        document.getElementById('current-user-display').innerText = currentUser;
+        switchScreen('memory-screen');
+        initMemoryGame();
+    }
+
+    function restartMemory() {
+        memLevel = 1;
+        initMemoryGame();
+    }
+
+    function clearGameTimers() {
+        gameTimeouts.forEach(clearTimeout);
+        gameTimeouts = [];
+        clearInterval(timerInterval);
+        document.getElementById('phase-overlay').classList.add('hidden');
+        document.getElementById('result-overlay').classList.add('hidden');
+    }
+
+    function updateGridLayout(totalCards) {
+        const board = document.getElementById('board');
+        const isLandscape = window.innerWidth > window.innerHeight;
+        
+        const portrait = { 4:[2,2], 6:[2,3], 8:[2,4], 10:[3,4], 12:[3,4], 14:[3,5], 16:[4,4], 18:[4,5], 20:[4,5], 22:[4,6] };
+        const landscape = { 4:[2,2], 6:[3,2], 8:[4,2], 10:[4,3], 12:[4,3], 14:[5,3], 16:[4,4], 18:[5,4], 20:[5,4], 22:[6,4] };
+        const layout = isLandscape ? landscape[totalCards] : portrait[totalCards];
+        board.style.gridTemplateColumns = `repeat(${layout[0]}, 1fr)`;
+        board.style.gridTemplateRows = `repeat(${layout[1]}, 1fr)`;
+    }
+
+    window.addEventListener('resize', () => {
+        if(!document.getElementById('memory-screen').classList.contains('hidden')) {
+            updateGridLayout((memLevel + 1) * 2);
+        }
+        if(!document.getElementById('learn-screen').classList.contains('hidden')) {
+            resizeCanvases();
+        }
+    });
+
+    function updateTimerUI() {
+        if(timeLeft < 0) timeLeft = 0;
+        document.getElementById('time-left').innerText = timeLeft;
+        const textEl = document.getElementById('timer-text');
+        const barEl = document.getElementById('progress-bar');
+        
+        const percentage = (timeLeft / totalTime) * 100;
+        barEl.style.width = `${percentage}%`;
+
+        if (timeLeft <= 10 && timeLeft > 0) {
+            textEl.classList.add('danger');
+            barEl.classList.add('danger');
+        } else {
+            textEl.classList.remove('danger');
+            barEl.classList.remove('danger');
+        }
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerUI();
+            if (timeLeft <= 10 && timeLeft > 0) sounds.tick();
+            if (timeLeft <= 0) { clearInterval(timerInterval); levelFailed(); }
+        }, 1000);
+    }
+
+    function deductTime() {
+        timeLeft -= PENALTY_SEC;
+        if (timeLeft < 0) timeLeft = 0;
+        updateTimerUI();
+        
+        const wrapper = document.getElementById('timer-wrapper');
+        wrapper.classList.remove('shake-animation');
+        void wrapper.offsetWidth; 
+        wrapper.classList.add('shake-animation');
+        
+        setTimeout(() => { wrapper.classList.remove('shake-animation'); }, 400);
+    }
+
+    function initMemoryGame() {
+        clearGameTimers();
+        totalPairs = memLevel + 1; 
+        let totalCards = totalPairs * 2;
+        matchedPairs = 0;
+        firstCard = secondCard = null;
+        lockBoard = true; 
+        
+        totalTime = 10 + (memLevel * 5); 
+        timeLeft = totalTime;
+        updateTimerUI(); 
+
+        document.getElementById('level-title').innerText = `${memLevel}단계`;
+        document.getElementById('total-pairs').innerText = totalPairs;
+        document.getElementById('pairs-left').innerText = totalPairs;
+        document.getElementById('result-overlay').classList.add('hidden');
+        
+        const phaseOverlay = document.getElementById('phase-overlay');
+        const phaseMsg = document.getElementById('phase-msg');
+        
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        updateGridLayout(totalCards);
+
+        let shuffledData = shuffle([...hanja8]);
+        let selectedData = shuffledData.slice(0, totalPairs);
+        let deck = shuffle([...selectedData, ...selectedData]);
+
+        deck.forEach(item => {
+            const cardEl = document.createElement('div');
+            cardEl.classList.add('card'); 
+            cardEl.dataset.hanja = item.h;
+            cardEl.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-back"></div>
+                    <div class="card-front">
+                        <div class="hanja">${item.h}</div>
+                        <div class="meaning">${item.m}</div>
+                    </div>
+                </div>
+            `;
+            cardEl.addEventListener('click', flipCard);
+            board.appendChild(cardEl);
+        });
+
+        phaseOverlay.classList.remove('hidden');
+        phaseMsg.innerText = "👀 카드의 위치를 기억하세요!";
+        const memoTimeMs = memLevel * 1000;
+
+        gameTimeouts.push(setTimeout(() => {
+            phaseOverlay.classList.add('hidden');
+            const allCards = document.querySelectorAll('.card');
+            allCards.forEach(card => card.classList.add('flipped')); 
+
+            gameTimeouts.push(setTimeout(() => {
+                allCards.forEach(card => card.classList.remove('flipped')); 
+                phaseOverlay.classList.remove('hidden');
+                phaseMsg.innerText = "▶️ 짝을 맞춰보세요!";
+                sounds.start(); 
+                
+                gameTimeouts.push(setTimeout(() => {
+                    phaseOverlay.classList.add('hidden');
+                    lockBoard = false; 
+                    startTimer(); 
+                }, 800));
+            }, memoTimeMs)); 
+        }, 1200));
+    }
+
+    function flipCard() {
+        if (lockBoard || this === firstCard) return;
+        sounds.flip();
+        this.classList.add('flipped');
+        if (!firstCard) { firstCard = this; return; }
+        secondCard = this;
+        checkForMatch();
+    }
+
+    function checkForMatch() {
+        let isMatch = firstCard.dataset.hanja === secondCard.dataset.hanja;
+        if (isMatch) {
+            sounds.match();
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            matchedPairs++;
+            document.getElementById('pairs-left').innerText = totalPairs - matchedPairs;
+            resetBoard();
+            if (matchedPairs === totalPairs) setTimeout(levelComplete, 500);
+        } else {
+            sounds.fail();
+            lockBoard = true;
+            firstCard.classList.add('error');
+            secondCard.classList.add('error');
+            deductTime();
+            setTimeout(() => {
+                firstCard.classList.remove('flipped', 'error');
+                secondCard.classList.remove('flipped', 'error');
+                if (timeLeft > 0) resetBoard(); 
+            }, 700);
+        }
+    }
+
+    function resetBoard() { [firstCard, secondCard, lockBoard] = [null, null, false]; }
+
+    function levelFailed() {
+        sounds.gameover();
+        lockBoard = true;
+        const overlay = document.getElementById('result-overlay');
+        overlay.classList.remove('hidden');
+        document.getElementById('overlay-msg').innerText = `시간 초과! 😭\n${memLevel}단계를 실패했습니다.`;
+        const btn = document.getElementById('overlay-btn');
+        btn.innerText = '다시 도전하기';
+        btn.onclick = () => initMemoryGame();
+    }
+
+    function levelComplete() {
+        clearInterval(timerInterval); 
+        sounds.clear();
+        
+        // 닉네임 기반으로 레벨 세이브
+        if(memLevel < maxLevel) {
+            saveProgress(currentUser, memLevel + 1);
+        }
+
+        const overlay = document.getElementById('result-overlay');
+        overlay.classList.remove('hidden');
+        const btn = document.getElementById('overlay-btn');
+
+        if (memLevel < maxLevel) {
+            document.getElementById('overlay-msg').innerText = `축하합니다!\n${memLevel}단계 클리어!`;
+            btn.innerText = '다음 단계';
+            btn.onclick = () => { memLevel++; initMemoryGame(); };
+        } else {
+            document.getElementById('overlay-msg').innerText = `🎊 축하합니다! 🎊\n모든 단계를 완료했습니다!`;
+            btn.innerText = '처음부터 다시하기';
+            btn.onclick = () => { 
+                memLevel = 1; 
+                saveProgress(currentUser, 1);
+                initMemoryGame(); 
+            };
+        }
+    }
+
+    /* ==================== 한자 학습 로직 (자유 그리기 모드) ==================== */
+    let learnList = [];
+    let learnIndex = 0;
+    const drawBoards = [];
+
+    class DrawBoard {
+        constructor(canvasId, bgCanvasId, showGuide) {
+            this.canvas = document.getElementById(canvasId);
+            this.bgCanvas = document.getElementById(bgCanvasId);
+            this.ctx = this.canvas.getContext('2d');
+            this.bgCtx = this.bgCanvas.getContext('2d');
+            this.showGuide = showGuide;
+            
+            this.isDrawing = false;
+            this.lastX = 0;
+            this.lastY = 0;
+            this.bindEvents();
+        }
+
+        resizeAndDraw(hanjaItem) {
+            const wrapper = this.canvas.parentElement;
+            const size = wrapper.clientWidth;
+            const dpr = window.devicePixelRatio || 1;
+            
+            this.bgCanvas.width = size * dpr; this.bgCanvas.height = size * dpr;
+            this.canvas.width = size * dpr; this.canvas.height = size * dpr;
+            
+            this.bgCtx.scale(dpr, dpr);
+            this.ctx.scale(dpr, dpr);
+            
+            this.ctx.lineCap = 'round';
+            this.ctx.lineJoin = 'round';
+            this.ctx.lineWidth = size * 0.08; 
+            this.ctx.strokeStyle = '#333';
+
+            this.bgCtx.clearRect(0, 0, size, size);
+            this.ctx.clearRect(0, 0, size, size);
+
+            if (this.showGuide && hanjaItem) {
+                this.bgCtx.font = `${size * 0.7}px ${getComputedStyle(document.documentElement).getPropertyValue('--hanja-font')}`;
+                this.bgCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.bgCtx.textAlign = 'center';
+                this.bgCtx.textBaseline = 'middle';
+                this.bgCtx.fillText(hanjaItem.h, size / 2, size / 2);
+            }
+        }
+
+        clear() {
+            const size = this.canvas.clientWidth;
+            this.ctx.clearRect(0, 0, size, size);
+        }
+
+        getPointerPos(e) {
+            const rect = this.canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        startPosition = (e) => {
+            if(e.touches && e.touches.length > 1) return;
+            e.preventDefault(); 
+            this.isDrawing = true;
+            const pos = this.getPointerPos(e);
+            this.lastX = pos.x; this.lastY = pos.y;
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.lastX, this.lastY);
+            this.ctx.lineTo(this.lastX, this.lastY);
+            this.ctx.stroke();
+        }
+
+        endPosition = (e) => {
+            if (!this.isDrawing) return;
+            e.preventDefault();
+            this.isDrawing = false;
+            this.ctx.beginPath();
+        }
+
+        draw = (e) => {
+            if (!this.isDrawing) return;
+            e.preventDefault();
+            const pos = this.getPointerPos(e);
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.lastX, this.lastY);
+            this.ctx.lineTo(pos.x, pos.y);
+            this.ctx.stroke();
+            this.lastX = pos.x; this.lastY = pos.y;
+        }
+
+        bindEvents() {
+            this.canvas.addEventListener('mousedown', this.startPosition);
+            this.canvas.addEventListener('mouseup', this.endPosition);
+            this.canvas.addEventListener('mouseout', this.endPosition);
+            this.canvas.addEventListener('mousemove', this.draw);
+
+            this.canvas.addEventListener('touchstart', this.startPosition, { passive: false });
+            this.canvas.addEventListener('touchend', this.endPosition, { passive: false });
+            this.canvas.addEventListener('touchcancel', this.endPosition, { passive: false });
+            this.canvas.addEventListener('touchmove', this.draw, { passive: false });
+        }
+    }
+
+    function startLearning() {
+        switchScreen('learn-screen');
+        if (drawBoards.length === 0) {
+            drawBoards.push(new DrawBoard('draw-canvas-1', 'bg-canvas-1', true));  
+            drawBoards.push(new DrawBoard('draw-canvas-2', 'bg-canvas-2', false)); 
+        }
+        restartLearning(); 
+    }
+
+    function restartLearning() {
+        learnList = shuffle([...hanja8]);
+        learnIndex = 0;
+        loadLearnHanja();
+    }
+
+    function loadLearnHanja() {
+        const item = learnList[learnIndex];
+        document.getElementById('learn-meaning').innerText = item.m;
+        document.getElementById('learn-hanja').innerText = item.h;
+        document.getElementById('learn-progress').innerText = `${learnIndex + 1} / 50`;
+        resizeCanvases();
+        
+        // 만약 획순 가이드 창이 열려있다면 새로고침
+        if(isGuideOpen) openStrokeGuide();
+    }
+
+    function resizeCanvases() {
+        if(document.getElementById('learn-screen').classList.contains('hidden')) return;
+        const item = learnList[learnIndex];
+        drawBoards.forEach(board => board.resizeAndDraw(item));
+    }
+
+    function clearCanvases() {
+        drawBoards.forEach(board => board.clear());
+    }
+
+    function nextLearnHanja() {
+        learnIndex++;
+        if (learnIndex >= learnList.length) {
+            alert('8급 50자를 모두 학습했습니다! 순서를 섞어 다시 시작합니다.');
+            restartLearning();
+        } else {
+            loadLearnHanja();
+        }
+    }
+
+    /* ==================== 3. 획순 가이드 애니메이션 (Hanzi Writer) ==================== */
+    let strokeWriter = null;
+    let isGuideOpen = false;
+
+    function openStrokeGuide() {
+        isGuideOpen = true;
+        const item = learnList[learnIndex];
+        document.getElementById('stroke-overlay').classList.remove('hidden');
+
+        const target = document.getElementById('writer-target');
+        target.innerHTML = ''; // 기존에 생성된 캔버스 삭제
+
+        // HanziWriter 인스턴스 생성
+        strokeWriter = HanziWriter.create('writer-target', item.h, {
+            width: 200,
+            height: 200,
+            padding: 10,
+            showOutline: true,
+            strokeAnimationSpeed: 1.5, // 긋는 속도
+            delayBetweenStrokes: 150,  // 획 사이 딜레이
+            radicalColor: '#337ab7'
+        });
+
+        loopStrokeAnimation();
+    }
+
+    function loopStrokeAnimation() {
+        if(!isGuideOpen || !strokeWriter) return;
+        strokeWriter.animateCharacter({
+            onComplete: function() {
+                // 한 글자 애니메이션이 끝난 후 1.5초 뒤에 무한 반복
+                setTimeout(() => {
+                    if(isGuideOpen) loopStrokeAnimation();
+                }, 1500);
+            }
+        });
+    }
+
+    function closeStrokeGuide() {
+        isGuideOpen = false;
+        document.getElementById('stroke-overlay').classList.add('hidden');
+        strokeWriter = null;
+    }
+</script>
+</body>
+</html>

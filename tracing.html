@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>한자 8급 스마트 쓰기 퀴즈</title>
+    <!-- Hanzi Writer 라이브러리 불러오기 -->
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f0f4f8;
+            --btn-color: #ff9800;
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: var(--bg-color); margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+
+        header {
+            width: 100%; background: white; padding: 15px; text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; color: #333; }
+        
+        #info-panel { text-align: center; margin-bottom: 15px; }
+        #meaning-text { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: 5px; }
+        #progress-text { font-size: 1rem; color: #666; }
+
+        /* 그리기 캔버스 영역 */
+        #character-target-div {
+            position: relative;
+            background: white; border: 2px dashed #ccc; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            /* 중앙 십자선 가이드 */
+            background-image: linear-gradient(#eee 2px, transparent 2px), linear-gradient(90deg, #eee 2px, transparent 2px);
+            background-size: 50% 50%;
+            background-position: center center;
+        }
+
+        .controls {
+            margin-top: 25px; display: flex; gap: 15px; width: 90vw; max-width: 400px;
+        }
+
+        button {
+            flex: 1; padding: 15px 0; font-size: 1.2rem; cursor: pointer;
+            border: none; border-radius: 8px; color: white; font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #hint-btn { background: #9e9e9e; }
+        #next-btn { background: var(--btn-color); }
+        button:active { transform: scale(0.97); }
+        
+        #status-msg {
+            margin-top: 20px; font-size: 1.2rem; font-weight: bold; color: #4caf50;
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>✍️ 스마트 한자 쓰기</h1>
+    </header>
+
+    <div id="info-panel">
+        <div id="meaning-text">준비 중...</div>
+        <div id="progress-text">1 / 50</div>
+    </div>
+
+    <!-- Hanzi Writer가 렌더링될 영역 -->
+    <div id="character-target-div"></div>
+    
+    <div id="status-msg"></div>
+
+    <div class="controls">
+        <button id="hint-btn" onclick="showHint()">힌트 보기</button>
+        <button id="next-btn" onclick="nextHanja()">다음 한자 ➡️</button>
+    </div>
+
+<script>
+    const hanja8 = [
+        {h:"一", m:"한 일"}, {h:"二", m:"두 이"}, {h:"三", m:"석 삼"}, {h:"四", m:"넉 사"}, {h:"五", m:"다섯 오"},
+        {h:"六", m:"여섯 육"}, {h:"七", m:"일곱 칠"}, {h:"八", m:"여덟 팔"}, {h:"九", m:"아홉 구"}, {h:"十", m:"열 십"},
+        {h:"東", m:"동녘 동"}, {h:"西", m:"서녘 서"}, {h:"南", m:"남녘 남"}, {h:"北", m:"북녘 북"},
+        {h:"木", m:"나무 목"}, {h:"火", m:"불 화"}, {h:"土", m:"흙 토"}, {h:"金", m:"쇠 금"}, {h:"水", m:"물 수"},
+        {h:"月", m:"달 월"}, {h:"日", m:"날 일"}, {h:"山", m:"뫼 산"}, {h:"川", m:"내 천"},
+        {h:"父", m:"아비 부"}, {h:"母", m:"어미 모"}, {h:"兄", m:"맏 형"}, {h:"弟", m:"아우 제"}, {h:"男", m:"사내 남"}, {h:"女", m:"여자 녀"},
+        {h:"王", m:"임금 왕"}, {h:"國", m:"나라 국"}, {h:"軍", m:"군사 군"}, {h:"民", m:"백성 민"},
+        {h:"大", m:"큰 대"}, {h:"中", m:"가운데 중"}, {h:"小", m:"작을 소"},
+        {h:"靑", m:"푸를 청"}, {h:"白", m:"흰 백"},
+        {h:"學", m:"배울 학"}, {h:"校", m:"학교 교"}, {h:"先", m:"먼저 선"}, {h:"生", m:"날 생"},
+        {h:"年", m:"해 년"}, {h:"室", m:"집 실"}, {h:"萬", m:"일만 만"}, {h:"長", m:"길 장"},
+        {h:"寸", m:"마디 촌"}, {h:"正", m:"바를 정"}, {h:"全", m:"온전 전"}, {h:"韓", m:"한국 한"}
+    ];
+
+    let currentIndex = 0;
+    let writer = null;
+
+    function initHanja() {
+        const item = hanja8[currentIndex];
+        document.getElementById('meaning-text').innerText = item.m;
+        document.getElementById('progress-text').innerText = `${currentIndex + 1} / 50`;
+        document.getElementById('status-msg').innerText = "획순에 맞춰 써보세요!";
+        document.getElementById('status-msg').style.color = "#4a90e2";
+        document.getElementById('character-target-div').innerHTML = ''; // 초기화
+
+        // 화면 크기에 맞춰 캔버스 사이즈 조절
+        const size = Math.min(window.innerWidth * 0.9, 350);
+        document.getElementById('character-target-div').style.width = size + 'px';
+        document.getElementById('character-target-div').style.height = size + 'px';
+
+        // HanziWriter 초기화
+        writer = HanziWriter.create('character-target-div', item.h, {
+            width: size,
+            height: size,
+            padding: size * 0.1,
+            showCharacter: false, // 글자를 완전히 숨김
+            showOutline: true,    // 연한 윤곽선만 표시
+            outlineColor: '#e0e0e0',
+            strokeColor: '#333333',
+            drawingWidth: 20
+        });
+
+        // 퀴즈(채점) 모드 실행
+        writer.quiz({
+            onMistake: function(strokeData) {
+                // 획순이나 방향이 틀렸을 때
+                document.getElementById('status-msg').innerText = "❌ 획순이나 방향이 틀렸어요!";
+                document.getElementById('status-msg').style.color = "#f44336";
+                setTimeout(() => {
+                    if (document.getElementById('status-msg').innerText.includes("❌")) {
+                        document.getElementById('status-msg').innerText = "다시 시도해보세요!";
+                        document.getElementById('status-msg').style.color = "#ff9800";
+                    }
+                }, 1500);
+            },
+            onComplete: function(summaryData) {
+                // 한자를 완벽하게 다 썼을 때
+                document.getElementById('status-msg').innerText = "🎉 완벽해요! 정답입니다!";
+                document.getElementById('status-msg').style.color = "#4caf50";
+                
+                // 정답 맞추면 예쁘게 글자가 그려지는 애니메이션 재생
+                writer.hideCharacter();
+                writer.animateCharacter();
+            }
+        });
+    }
+
+    // 힌트 버튼 (애니메이션으로 획순을 한 번 보여줌)
+    function showHint() {
+        if (!writer) return;
+        document.getElementById('status-msg').innerText = "💡 획순을 잘 보세요!";
+        document.getElementById('status-msg').style.color = "#9e9e9e";
+        
+        // 퀴즈를 잠시 취소하고 애니메이션 재생 후 다시 퀴즈 모드로
+        writer.cancelQuiz();
+        writer.animateCharacter({
+            onComplete: function() {
+                setTimeout(() => {
+                    initHanja(); // 다시 쓸 수 있도록 리셋
+                }, 1000);
+            }
+        });
+    }
+
+    function nextHanja() {
+        currentIndex++;
+        if (currentIndex >= hanja8.length) {
+            alert('8급 50자를 모두 연습했습니다! 처음부터 다시 시작합니다.');
+            currentIndex = 0;
+        }
+        initHanja();
+    }
+
+    // 첫 실행
+    setTimeout(initHanja, 100);
+</script>
+
+</body>
+</html>
