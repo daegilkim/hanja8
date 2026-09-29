@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>한자 8급 통합 학습기</title>
+    <title>한자 통합 학습기 (8급·7급)</title>
     <!-- 획순 가이드 애니메이션을 위한 Hanzi Writer 라이브러리 추가 -->
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <style>
@@ -31,10 +31,10 @@
         .screen { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; height: 100%; }
 
         /* 타이틀 화면 */
-        #title-screen { justify-content: center; text-align: center; padding: 20px; background: white; width: 100%; flex-grow: 1; }
-        #title-screen h1 { color: #333; margin-bottom: 40px; font-size: 2.8rem; }
+        #title-screen { justify-content: center; justify-content: safe center; overflow-y: auto; text-align: center; padding: 20px; background: white; width: 100%; flex-grow: 1; }
+        #title-screen h1 { color: #333; margin-bottom: 24px; font-size: 2.6rem; }
         #title-screen h1 span { color: var(--primary-color); }
-        .input-group { margin-bottom: 30px; width: 100%; display: flex; flex-direction: column; align-items: center;}
+        .input-group { margin-bottom: 22px; width: 100%; display: flex; flex-direction: column; align-items: center;}
         input[type="text"] {
             width: 90%; max-width: 350px; padding: 18px; font-size: 1.3rem; border: 2px solid #ddd;
             border-radius: 10px; text-align: center; outline: none; user-select: auto; -webkit-user-select: auto;
@@ -44,11 +44,14 @@
         
         .menu-buttons { display: flex; flex-direction: column; gap: 20px; width: 90%; max-width: 350px; margin: 0 auto; }
         .menu-btn { 
-            padding: 22px; font-size: 1.5rem; font-weight: bold; border: none; cursor: pointer;
+            padding: 18px; font-size: 1.5rem; font-weight: bold; border: none; cursor: pointer;
             background: var(--primary-color); color: white; border-radius: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.15);
             transition: transform 0.1s;
         }
         .menu-btn.learn { background: #ff9800; }
+        .menu-btn.grade7 { background: #43a047; }
+        .menu-btn.back { background: #9e9e9e; font-size: 1.1rem; padding: 12px; }
+        .menu-label { font-size: 1.2rem; font-weight: bold; color: #555; text-align: center; }
         .menu-btn:active { transform: scale(0.95); }
 
         /* 공통 헤더 */
@@ -141,16 +144,26 @@
 
     <!-- 타이틀 화면 -->
     <div id="title-screen" class="screen">
-        <h1>한자 8급<br><span>통합 학습기</span></h1>
+        <h1>한자<br><span>통합 학습기</span></h1>
         
         <div class="input-group">
             <input type="text" id="nickname-input" placeholder="이름 (메모리 게임용)" oninput="checkSavedData()">
             <div class="saved-info" id="saved-info-text"></div>
         </div>
 
-        <div class="menu-buttons">
+        <!-- 1단계: 급수 선택 -->
+        <div id="grade-menu" class="menu-buttons">
+            <div class="menu-label">급수를 선택하세요</div>
+            <button class="menu-btn" onclick="selectGrade(8)">📘 한자 8급</button>
+            <button class="menu-btn grade7" onclick="selectGrade(7)">📗 한자 7급</button>
+        </div>
+
+        <!-- 2단계: 모드 선택 -->
+        <div id="mode-menu" class="menu-buttons hidden">
+            <div class="menu-label" id="mode-grade-label">한자 8급</div>
             <button class="menu-btn" onclick="startMemoryGame()">🎮 메모리 게임하기</button>
             <button class="menu-btn learn" onclick="startLearning()">✍️ 한자 쓰기 연습</button>
+            <button class="menu-btn back" onclick="showGradeMenu()">⬅️ 급수 다시 선택</button>
         </div>
     </div>
 
@@ -229,22 +242,50 @@
 
 <script>
     /* ==================== 공통 데이터 및 설정 ==================== */
-    const hanja8 = [
-        {h:"一", m:"한 일"}, {h:"二", m:"두 이"}, {h:"三", m:"석 삼"}, {h:"四", m:"넉 사"}, {h:"五", m:"다섯 오"},
-        {h:"六", m:"여섯 육"}, {h:"七", m:"일곱 칠"}, {h:"八", m:"여덟 팔"}, {h:"九", m:"아홉 구"}, {h:"十", m:"열 십"},
-        {h:"東", m:"동녘 동"}, {h:"西", m:"서녘 서"}, {h:"南", m:"남녘 남"}, {h:"北", m:"북녘 북"},
-        {h:"木", m:"나무 목"}, {h:"火", m:"불 화"}, {h:"土", m:"흙 토"}, {h:"金", m:"쇠 금"}, {h:"水", m:"물 수"},
-        {h:"月", m:"달 월"}, {h:"日", m:"날 일"}, {h:"山", m:"뫼 산"}, {h:"川", m:"내 천"},
-        {h:"父", m:"아비 부"}, {h:"母", m:"어미 모"}, {h:"兄", m:"맏 형"}, {h:"弟", m:"아우 제"}, {h:"男", m:"사내 남"}, {h:"女", m:"여자 녀"},
-        {h:"王", m:"임금 왕"}, {h:"國", m:"나라 국"}, {h:"軍", m:"군사 군"}, {h:"民", m:"백성 민"},
-        {h:"大", m:"큰 대"}, {h:"中", m:"가운데 중"}, {h:"小", m:"작을 소"},
-        {h:"靑", m:"푸를 청"}, {h:"白", m:"흰 백"},
-        {h:"學", m:"배울 학"}, {h:"校", m:"학교 교"}, {h:"先", m:"먼저 선"}, {h:"生", m:"날 생"},
-        {h:"年", m:"해 년"}, {h:"室", m:"집 실"}, {h:"萬", m:"일만 만"}, {h:"長", m:"길 장"},
-        {h:"寸", m:"마디 촌"}, {h:"正", m:"바를 정"}, {h:"全", m:"온전 전"}, {h:"韓", m:"한국 한"}
-    ];
+    // 한국어문회 배정한자 기준 (출처: 급수별 배정한자표)
+    const HANJA_SETS = {
+        // 8급 50자
+        8: [
+            {h:"校", m:"학교 교"}, {h:"敎", m:"가르칠 교"}, {h:"九", m:"아홉 구"}, {h:"國", m:"나라 국"}, {h:"軍", m:"군사 군"},
+            {h:"金", m:"쇠 금"}, {h:"南", m:"남녘 남"}, {h:"女", m:"여자 녀"}, {h:"年", m:"해 년"}, {h:"大", m:"큰 대"},
+            {h:"東", m:"동녘 동"}, {h:"六", m:"여섯 육"}, {h:"萬", m:"일만 만"}, {h:"母", m:"어미 모"}, {h:"木", m:"나무 목"},
+            {h:"門", m:"문 문"}, {h:"民", m:"백성 민"}, {h:"白", m:"흰 백"}, {h:"父", m:"아비 부"}, {h:"北", m:"북녘 북"},
+            {h:"四", m:"넉 사"}, {h:"山", m:"뫼 산"}, {h:"三", m:"석 삼"}, {h:"生", m:"날 생"}, {h:"西", m:"서녘 서"},
+            {h:"先", m:"먼저 선"}, {h:"小", m:"작을 소"}, {h:"水", m:"물 수"}, {h:"室", m:"집 실"}, {h:"十", m:"열 십"},
+            {h:"五", m:"다섯 오"}, {h:"王", m:"임금 왕"}, {h:"外", m:"바깥 외"}, {h:"月", m:"달 월"}, {h:"二", m:"두 이"},
+            {h:"人", m:"사람 인"}, {h:"一", m:"한 일"}, {h:"日", m:"날 일"}, {h:"長", m:"긴 장"}, {h:"弟", m:"아우 제"},
+            {h:"中", m:"가운데 중"}, {h:"靑", m:"푸를 청"}, {h:"寸", m:"마디 촌"}, {h:"七", m:"일곱 칠"}, {h:"土", m:"흙 토"},
+            {h:"八", m:"여덟 팔"}, {h:"學", m:"배울 학"}, {h:"韓", m:"한국 한"}, {h:"兄", m:"맏 형"}, {h:"火", m:"불 화"}
+        ],
+        // 7급 100자 (7급 신규 배정한자. 8급 50자는 8급에서 학습)
+        7: [
+            {h:"歌", m:"노래 가"}, {h:"家", m:"집 가"}, {h:"間", m:"사이 간"}, {h:"江", m:"강 강"}, {h:"車", m:"수레 거/차"},
+            {h:"工", m:"장인 공"}, {h:"空", m:"빌 공"}, {h:"口", m:"입 구"}, {h:"記", m:"기록할 기"}, {h:"氣", m:"기운 기"},
+            {h:"旗", m:"기 기"}, {h:"男", m:"사내 남"}, {h:"內", m:"안 내"}, {h:"農", m:"농사 농"}, {h:"答", m:"대답 답"},
+            {h:"道", m:"길 도"}, {h:"冬", m:"겨울 동"}, {h:"同", m:"한가지 동"}, {h:"洞", m:"골 동"}, {h:"動", m:"움직일 동"},
+            {h:"登", m:"오를 등"}, {h:"來", m:"올 래"}, {h:"力", m:"힘 력"}, {h:"老", m:"늙을 로"}, {h:"里", m:"마을 리"},
+            {h:"林", m:"수풀 림"}, {h:"立", m:"설 립"}, {h:"每", m:"매양 매"}, {h:"面", m:"낯 면"}, {h:"名", m:"이름 명"},
+            {h:"命", m:"목숨 명"}, {h:"文", m:"글월 문"}, {h:"問", m:"물을 문"}, {h:"物", m:"만물 물"}, {h:"方", m:"모 방"},
+            {h:"百", m:"일백 백"}, {h:"夫", m:"지아비 부"}, {h:"不", m:"아닐 불"}, {h:"事", m:"일 사"}, {h:"算", m:"셈 산"},
+            {h:"上", m:"위 상"}, {h:"色", m:"빛 색"}, {h:"夕", m:"저녁 석"}, {h:"姓", m:"성 성"}, {h:"世", m:"세상 세"},
+            {h:"少", m:"적을 소"}, {h:"所", m:"바 소"}, {h:"手", m:"손 수"}, {h:"數", m:"셀 수"}, {h:"市", m:"저자 시"},
+            {h:"時", m:"때 시"}, {h:"食", m:"밥 식"}, {h:"植", m:"심을 식"}, {h:"心", m:"마음 심"}, {h:"安", m:"편안 안"},
+            {h:"語", m:"말씀 어"}, {h:"然", m:"그럴 연"}, {h:"午", m:"낮 오"}, {h:"右", m:"오른 우"}, {h:"有", m:"있을 유"},
+            {h:"育", m:"기를 육"}, {h:"邑", m:"고을 읍"}, {h:"入", m:"들 입"}, {h:"子", m:"아들 자"}, {h:"字", m:"글자 자"},
+            {h:"自", m:"스스로 자"}, {h:"場", m:"마당 장"}, {h:"全", m:"온전 전"}, {h:"前", m:"앞 전"}, {h:"電", m:"번개 전"},
+            {h:"正", m:"바를 정"}, {h:"祖", m:"할아비 조"}, {h:"足", m:"발 족"}, {h:"左", m:"왼 좌"}, {h:"主", m:"임금 주"},
+            {h:"住", m:"살 주"}, {h:"重", m:"무거울 중"}, {h:"地", m:"땅 지"}, {h:"紙", m:"종이 지"}, {h:"直", m:"곧을 직"},
+            {h:"川", m:"내 천"}, {h:"千", m:"일천 천"}, {h:"天", m:"하늘 천"}, {h:"草", m:"풀 초"}, {h:"村", m:"마을 촌"},
+            {h:"秋", m:"가을 추"}, {h:"春", m:"봄 춘"}, {h:"出", m:"날 출"}, {h:"便", m:"편할 편"}, {h:"平", m:"평평할 평"},
+            {h:"下", m:"아래 하"}, {h:"夏", m:"여름 하"}, {h:"漢", m:"한나라 한"}, {h:"海", m:"바다 해"}, {h:"花", m:"꽃 화"},
+            {h:"話", m:"말씀 화"}, {h:"活", m:"살 활"}, {h:"孝", m:"효도 효"}, {h:"後", m:"뒤 후"}, {h:"休", m:"쉴 휴"}
+        ]
+    };
+    let currentGrade = 8;
+    let hanjaPool = HANJA_SETS[8];
 
-    const SAVE_KEY = 'hanja8_saved_data';
+    // 8급은 기존 저장 키를 그대로 사용해 이전 기록을 유지합니다.
+    const SAVE_KEYS = { 8: 'hanja8_saved_data', 7: 'hanja7_saved_data' };
     let currentUser = '';
 
     // 1단계 ~ 10단계까지 빈 공간 없는 최적의 그리드(짝, 세로모드 행열, 가로모드 행열)
@@ -274,27 +315,53 @@
         document.getElementById(screenId).classList.remove('hidden');
     }
 
-    function goHome() { clearGameTimers(); switchScreen('title-screen'); }
+    function goHome() { clearGameTimers(); switchScreen('title-screen'); showGradeMenu(); }
 
-    function loadProgress(nickname) {
-        const data = JSON.parse(localStorage.getItem(SAVE_KEY)) || {};
-        return data[nickname] || 1;
+    function selectGrade(grade) {
+        currentGrade = grade;
+        hanjaPool = HANJA_SETS[grade];
+        document.getElementById('grade-menu').classList.add('hidden');
+        document.getElementById('mode-menu').classList.remove('hidden');
+        document.getElementById('mode-grade-label').innerText = `한자 ${grade}급 (${hanjaPool.length}자)`;
+        checkSavedData();
+    }
+
+    function showGradeMenu() {
+        document.getElementById('mode-menu').classList.add('hidden');
+        document.getElementById('grade-menu').classList.remove('hidden');
+        checkSavedData();
+    }
+
+    function readSave(grade) {
+        try { return JSON.parse(localStorage.getItem(SAVE_KEYS[grade])) || {}; }
+        catch (e) { return {}; }
+    }
+
+    function loadProgress(nickname, grade = currentGrade) {
+        return readSave(grade)[nickname] || 1;
     }
 
     function saveProgress(nickname, level) {
-        const data = JSON.parse(localStorage.getItem(SAVE_KEY)) || {};
-        if (!data[nickname] || data[nickname] < level) {
-            data[nickname] = level;
-            localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-        }
+        try {
+            const data = readSave(currentGrade);
+            if (!data[nickname] || data[nickname] < level) {
+                data[nickname] = level;
+                localStorage.setItem(SAVE_KEYS[currentGrade], JSON.stringify(data));
+            }
+        } catch (e) { /* 저장 불가 환경에서는 무시 */ }
     }
 
     function checkSavedData() {
         const nickname = document.getElementById('nickname-input').value.trim();
         const info = document.getElementById('saved-info-text');
-        if(nickname === '') { info.innerText = ''; return; }
-        const savedLevel = loadProgress(nickname);
-        info.innerText = savedLevel > 1 ? `저장된 기록: ${savedLevel}단계부터 시작` : '새로운 플레이어: 1단계부터 시작';
+        if (nickname === '') { info.innerText = ''; return; }
+        const inModeMenu = !document.getElementById('mode-menu').classList.contains('hidden');
+        if (inModeMenu) {
+            const savedLevel = loadProgress(nickname, currentGrade);
+            info.innerText = savedLevel > 1 ? `저장된 기록: ${savedLevel}단계부터 시작` : '새로운 플레이어: 1단계부터 시작';
+        } else {
+            info.innerText = `진행 단계 - 8급: ${loadProgress(nickname, 8)}단계 / 7급: ${loadProgress(nickname, 7)}단계`;
+        }
     }
 
     /* ==================== 사운드 ==================== */
@@ -429,7 +496,7 @@
         timeLeft = totalTime;
         updateTimerUI(); 
 
-        document.getElementById('level-title').innerText = `${memLevel}단계`;
+        document.getElementById('level-title').innerText = `${currentGrade}급 · ${memLevel}단계`;
         document.getElementById('total-pairs').innerText = totalPairs;
         document.getElementById('pairs-left').innerText = totalPairs;
         document.getElementById('result-overlay').classList.add('hidden');
@@ -441,7 +508,7 @@
         board.innerHTML = '';
         updateGridLayout();
 
-        let shuffledData = shuffle([...hanja8]);
+        let shuffledData = shuffle([...hanjaPool]);
         let selectedData = shuffledData.slice(0, totalPairs);
         let deck = shuffle([...selectedData, ...selectedData]);
 
@@ -691,13 +758,13 @@
         restartLearning(); 
     }
 
-    function restartLearning() { learnList = shuffle([...hanja8]); learnIndex = 0; loadLearnHanja(); }
+    function restartLearning() { learnList = shuffle([...hanjaPool]); learnIndex = 0; loadLearnHanja(); }
 
     function loadLearnHanja() {
         const item = learnList[learnIndex];
         document.getElementById('learn-meaning').innerText = item.m;
         document.getElementById('learn-hanja').innerText = item.h;
-        document.getElementById('learn-progress').innerText = `${learnIndex + 1} / 50`;
+        document.getElementById('learn-progress').innerText = `${currentGrade}급 · ${learnIndex + 1} / ${learnList.length}`;
         resizeCanvases();
         if(isGuideOpen) openStrokeGuide();
     }
@@ -713,7 +780,7 @@
     function nextLearnHanja() {
         learnIndex++;
         if (learnIndex >= learnList.length) {
-            alert('8급 50자를 모두 학습했습니다! 순서를 섞어 다시 시작합니다.'); restartLearning();
+            alert(`${currentGrade}급 ${learnList.length}자를 모두 학습했습니다! 순서를 섞어 다시 시작합니다.`); restartLearning();
         } else {
             loadLearnHanja();
         }
