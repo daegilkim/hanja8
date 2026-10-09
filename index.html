@@ -136,6 +136,60 @@
         .guide-modal h2 { margin: 0 0 15px 0; font-size: 1.5rem; color: var(--primary-color); }
         #writer-target { width: 200px; height: 200px; margin: 0 auto 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; background-image: linear-gradient(#eee 2px, transparent 2px), linear-gradient(90deg, #eee 2px, transparent 2px); background-size: 50% 50%; background-position: center center; }
 
+
+        /* 7급 모의고사 */
+        .menu-btn.exam { background: #7e57c2; }
+        #exam-screen, #exam-result-screen { background-color: var(--bg-color); width: 100%; }
+        .exam-top { width: 100%; background: white; padding: 10px 12px 8px; border-bottom: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-shrink: 0; }
+        .exam-top-row { display: flex; justify-content: space-between; align-items: center; }
+        #exam-count { font-size: 1.2rem; font-weight: bold; color: #333; }
+        #exam-answered { font-size: 0.85rem; color: #666; }
+        .exam-progress-bg { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+        #exam-progress-bar { height: 100%; width: 0; background: #7e57c2; transition: width 0.25s; }
+        #exam-chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 10px; width: 100%; background: white; border-bottom: 1px solid #ddd; flex-shrink: 0; }
+        .chip { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ccc; background: #fff; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #666; }
+        .chip.answered { background: #d1c4e9; border-color: #7e57c2; color: #4527a0; }
+        .chip.current { background: #7e57c2; border-color: #4527a0; color: #fff; font-weight: bold; }
+        #exam-body { flex-grow: 1; min-height: 0; overflow-y: auto; width: 100%; padding: 14px; display: flex; flex-direction: column; align-items: center; }
+        .exam-card { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .exam-section { border: 2px solid #333; border-radius: 4px; padding: 8px 10px; font-weight: bold; font-size: 0.95rem; margin-bottom: 14px; word-break: keep-all; line-height: 1.4; }
+        .exam-qnum { font-size: 1.2rem; font-weight: bold; color: #7e57c2; margin-bottom: 4px; }
+        .exam-stem { text-align: center; margin: 8px 0 18px; line-height: 1.35; word-break: keep-all; color: #222; }
+        .exam-stem.hanja-big { font-family: var(--hanja-font); font-size: 4.2rem; font-weight: bold; }
+        .exam-stem.emoji { font-size: 5.5rem; }
+        .exam-stem.text-big { font-size: 2.2rem; font-weight: bold; }
+        .exam-stem.sentence { font-size: 1.25rem; text-align: left; padding: 12px; border: 1px solid #ccc; border-radius: 8px; background: #fafafa; }
+        .exam-stem u { text-decoration: underline; text-underline-offset: 4px; font-weight: bold; }
+        .exam-stem .hj { font-family: var(--hanja-font); font-size: 1.5rem; }
+        .exam-options { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .exam-options.two { grid-template-columns: 1fr 1fr; }
+        .opt-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 12px; border: 2px solid #ddd; border-radius: 10px; background: #fafafa; color: #333; font-family: inherit; font-size: 1.1rem; text-align: left; cursor: pointer; word-break: keep-all; }
+        .opt-btn .no { font-weight: bold; color: #7e57c2; flex: 0 0 auto; }
+        .opt-btn.hanja-opt { font-family: var(--hanja-font); font-size: 2rem; font-weight: bold; }
+        .opt-btn.hanja-opt .no { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; font-size: 1.1rem; }
+        .opt-btn.selected { border-color: #7e57c2; background: #ede7f6; }
+        .exam-nav { display: flex; gap: 10px; width: 100%; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); background: white; border-top: 1px solid #ddd; flex-shrink: 0; }
+        .exam-nav button { flex: 1; padding: 14px 0; font-size: 1.15rem; font-weight: bold; border: none; border-radius: 10px; color: white; background: #7e57c2; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.12); }
+        .exam-nav button#exam-prev { background: #9e9e9e; }
+        .exam-nav button.submit { background: #43a047; }
+        .exam-nav button:disabled { opacity: 0.4; box-shadow: none; }
+        #exam-result-scroll { flex-grow: 1; min-height: 0; overflow-y: auto; width: 100%; padding: 14px; }
+        #exam-result-body { width: 100%; max-width: 450px; margin: 0 auto; }
+        .result-card { background: white; border-radius: 15px; padding: 22px 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .result-title { font-size: 1.2rem; font-weight: bold; color: #555; }
+        .result-score { font-size: 4.5rem; font-weight: bold; color: #7e57c2; line-height: 1.2; margin: 6px 0; }
+        .result-score span { font-size: 1.6rem; margin-left: 4px; }
+        .result-sub { color: #666; font-size: 1rem; }
+        .result-msg { font-size: 1.3rem; font-weight: bold; margin: 14px 0 8px; word-break: keep-all; }
+        .result-best { font-size: 0.9rem; color: #888; }
+        .rv-title { font-size: 1.1rem; font-weight: bold; margin: 20px 0 10px; color: #444; }
+        .rv-item { background: white; border-left: 5px solid var(--error-color); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); line-height: 1.5; word-break: keep-all; }
+        .rv-mine { color: var(--error-color); }
+        .rv-ans { color: var(--success-color); font-weight: bold; }
+        .rv-perfect { background: white; border-radius: 12px; padding: 18px; text-align: center; font-weight: bold; }
+        .result-btns { display: flex; flex-direction: column; gap: 10px; margin: 18px 0 10px; }
+        .result-btns .menu-btn { font-size: 1.2rem; padding: 14px; }
+
         button { touch-action: manipulation; }
         button:active { transform: scale(0.95); }
     </style>
@@ -163,6 +217,7 @@
             <div class="menu-label" id="mode-grade-label">한자 8급</div>
             <button class="menu-btn" onclick="startMemoryGame()">🎮 메모리 게임하기</button>
             <button class="menu-btn learn" onclick="startLearning()">✍️ 한자 쓰기 연습</button>
+            <button class="menu-btn exam hidden" id="exam-btn" onclick="startExam()">📝 7급 모의고사 (25문항)</button>
             <button class="menu-btn back" onclick="showGradeMenu()">⬅️ 급수 다시 선택</button>
         </div>
     </div>
@@ -222,6 +277,38 @@
                 <button id="guide-btn" onclick="openStrokeGuide()">획순 보기</button>
                 <button id="clear-btn" onclick="clearCanvases()">지우기</button>
                 <button id="next-btn" onclick="nextLearnHanja()">다음 한자 ➡️</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 7급 모의고사 화면 -->
+    <div id="exam-screen" class="screen hidden">
+        <div class="exam-top">
+            <div class="exam-top-row">
+                <button class="nav-btn" onclick="exitExam()">🏠 홈으로</button>
+                <span id="exam-count">1 / 25</span>
+                <span id="exam-answered"></span>
+            </div>
+            <div class="exam-progress-bg"><div id="exam-progress-bar"></div></div>
+        </div>
+        <div id="exam-chips"></div>
+        <div id="exam-body"></div>
+        <div class="exam-nav">
+            <button id="exam-prev" onclick="examPrev()">⬅️ 이전</button>
+            <button id="exam-next" onclick="examNext()">다음 ➡️</button>
+        </div>
+    </div>
+
+    <!-- 7급 모의고사 결과 화면 -->
+    <div id="exam-result-screen" class="screen hidden">
+        <div id="exam-result-scroll">
+            <div id="exam-result-body"></div>
+            <div style="max-width:450px; margin:0 auto;">
+                <div class="result-btns">
+                    <button class="menu-btn exam" onclick="startExam()">🔄 새 문제로 다시 풀기</button>
+                    <button class="menu-btn back" onclick="goHome()">🏠 홈으로</button>
+                </div>
             </div>
         </div>
     </div>
@@ -323,6 +410,7 @@
         document.getElementById('grade-menu').classList.add('hidden');
         document.getElementById('mode-menu').classList.remove('hidden');
         document.getElementById('mode-grade-label').innerText = `한자 ${grade}급 (${hanjaPool.length}자)`;
+        document.getElementById('exam-btn').classList.toggle('hidden', grade !== 7);
         checkSavedData();
     }
 
@@ -784,6 +872,330 @@
         } else {
             loadLearnHanja();
         }
+    }
+
+    /* ==================== 7급 모의고사 (출제 로직) ==================== */
+    const EXAM_COUNT = 25;
+    const EXAM_POINT = 4; // 25문항 × 4점 = 100점
+
+    // 그림 문제용 (이모지 → 한자). 같은 그룹은 헷갈리므로 오답 보기에서 제외
+    const EXAM_PIC = [
+        {h:"山", e:"⛰️"}, {h:"水", e:"💧"}, {h:"火", e:"🔥"}, {h:"木", e:"🌳"}, {h:"月", e:"🌙"},
+        {h:"日", e:"☀️"}, {h:"口", e:"👄"}, {h:"手", e:"✋"}, {h:"足", e:"🦶"}, {h:"花", e:"🌸"},
+        {h:"門", e:"🚪"}, {h:"車", e:"🚗"}, {h:"家", e:"🏠"}, {h:"旗", e:"🚩"}, {h:"電", e:"⚡"},
+        {h:"海", e:"🌊"}, {h:"紙", e:"📄"}, {h:"心", e:"❤️"}, {h:"草", e:"🌿"}, {h:"校", e:"🏫"}, {h:"食", e:"🍚"}
+    ];
+    const EXAM_PIC_GROUPS = [
+        ["水","江","川","海"], ["山","林","草","花","木","植"], ["日","月","夕","天","時"],
+        ["家","室","村","里","邑"], ["手","足","口","心"], ["門","校","室","學","敎"], ["火","電"]
+    ];
+
+    // 어휘: [한자어, 독음, 뜻, (문장: {w}가 어휘 자리)] — 모든 글자는 8급+7급 150자 범위 안
+    const EXAM_WORDS = [
+        ["白人","백인","피부색이 흰 인종의 사람"], ["金門","금문","쇠로 만든 문"], ["靑山","청산","나무가 우거진 푸른 산"],
+        ["手下","수하","손아래 또는 부하"], ["左右","좌우","왼쪽과 오른쪽","파도에 배가 {w}로 흔들린다."],
+        ["金山","금산","금을 캐내는 산"], ["出金","출금","통장에서 돈을 꺼냄","그는 오늘 통장에서 돈을 {w}했다."],
+        ["大門","대문","집의 정문","친구가 {w} 앞에서 기다리고 있다."], ["東西","동서","동쪽과 서쪽"], ["南北","남북","남쪽과 북쪽"],
+        ["上下","상하","위와 아래"], ["內外","내외","안과 밖"], ["父母","부모","아버지와 어머니"], ["兄弟","형제","형과 아우"],
+        ["弟子","제자","스승에게 가르침을 받는 사람"], ["山水","산수","산과 물"], ["水中","수중","물속"],
+        ["火山","화산","땅속의 마그마가 땅 밖으로 나와 쌓인 산","{w}이 폭발해서 연기가 치솟았다."],
+        ["日月","일월","해와 달"], ["人口","인구","일정한 지역에 사는 사람의 수","이 도시는 {w}가 해마다 늘고 있다."],
+        ["入口","입구","들어가는 곳","극장 {w}에서 친구를 기다렸다."], ["出口","출구","나가는 곳","지하철 {w}로 나오니 비가 내렸다."],
+        ["出入","출입","나가고 들어감"], ["百年","백년","일백 년"], ["三月","삼월","한 해의 셋째 달"],
+        ["六月","유월","한 해의 여섯째 달"], ["十月","시월","한 해의 열째 달"], ["五月","오월","한 해의 다섯째 달"],
+        ["天地","천지","하늘과 땅"], ["空中","공중","하늘과 땅 사이의 빈 곳"], ["海水","해수","바닷물","{w}는 맛이 짜다."],
+        ["草家","초가","짚이나 풀로 지붕을 인 집","산 아래에 {w}가 한 채 있다."], ["花草","화초","꽃이 피는 풀"],
+        ["國民","국민","한 나라를 이루는 사람"], ["國軍","국군","나라의 군대"], ["學生","학생","학교에서 배우는 사람"],
+        ["學校","학교","학생이 배우는 곳","{w}에 가는 길에 친구를 만났다."], ["先生","선생","학생을 가르치는 사람"],
+        ["校長","교장","학교의 가장 높은 책임자"], ["母女","모녀","어머니와 딸"], ["父子","부자","아버지와 아들"],
+        ["家門","가문","집안"], ["家事","가사","집안일"], ["家長","가장","한 집안의 어른"],
+        ["自然","자연","사람의 힘이 더해지지 않은 저절로 이루어진 상태"],
+        ["電話","전화","멀리 떨어진 사람과 말을 주고받는 기계","친구에게 {w}를 걸었다."],
+        ["正午","정오","낮 열두 시","{w}가 되자 점심 종이 울렸다."], ["午前","오전","낮 열두 시 이전"], ["午後","오후","낮 열두 시 이후"],
+        ["秋夕","추석","음력 팔월 보름","{w}에는 온 가족이 모인다."], ["直立","직립","꼿꼿하게 곧게 섬"],
+        ["重力","중력","지구가 물체를 끌어당기는 힘"], ["水力","수력","물의 힘"], ["動力","동력","기계를 움직이는 힘"],
+        ["休日","휴일","쉬는 날","{w}에는 가족과 공원에 간다."], ["生日","생일","태어난 날","내일은 동생의 {w}이다."],
+        ["名所","명소","이름난 곳"], ["農事","농사","곡식이나 채소를 심고 가꾸는 일"],
+        ["農村","농촌","농사짓는 사람들이 사는 마을","할머니 댁은 {w}에 있다."],
+        ["老人","노인","나이가 많이 든 사람","지하철에서 {w}께 자리를 양보했다."],
+        ["孝子","효자","부모를 잘 섬기는 아들","그는 마을에서 소문난 {w}이다."],
+        ["國旗","국기","나라를 상징하는 깃발","운동장에 {w}가 펄럭인다."], ["校歌","교가","학교의 노래"], ["校門","교문","학교의 문"],
+        ["登山","등산","산에 오름","주말에 가족과 함께 {w}을 했다."], ["下山","하산","산에서 내려옴"], ["登校","등교","학교에 감"],
+        ["外出","외출","볼일을 보러 밖으로 나감","비가 와서 {w}을 하지 않았다."], ["出生","출생","세상에 태어남"],
+        ["不安","불안","마음이 편하지 않음"], ["安心","안심","마음을 편안히 가짐"], ["每日","매일","날마다"], ["每年","매년","해마다"],
+        ["有名","유명","이름이 널리 알려져 있음"], ["前後","전후","앞과 뒤"], ["全國","전국","온 나라","{w}에서 많은 사람이 모였다."],
+        ["文字","문자","말을 적는 기호, 글자"], ["漢字","한자","중국에서 만들어 쓰는 글자"], ["韓國","한국","대한민국"],
+        ["木手","목수","나무로 집이나 물건을 짓는 사람"], ["食口","식구","한집에서 함께 사는 사람","우리 {w}는 모두 다섯 명이다."],
+        ["世上","세상","사람이 살고 있는 모든 사회"], ["地下","지하","땅속","건물 {w}에 주차장이 있다."],
+        ["天下","천하","하늘 아래 온 세상"], ["立春","입춘","봄이 시작되는 절기"],
+        ["日記","일기","그날 있었던 일을 적은 글","나는 매일 밤 {w}를 쓴다."], ["問答","문답","물음과 대답"],
+        ["正直","정직","마음이 바르고 곧음"], ["市場","시장","물건을 사고파는 곳","어머니와 함께 {w}에 갔다."],
+        ["工場","공장","물건을 만들어 내는 곳","{w}에서 자동차를 만든다."],
+        ["空氣","공기","지구를 둘러싸고 있는 기체","산에 오르니 {w}가 맑다."], ["記入","기입","글로 적어 넣음"],
+        ["算數","산수","셈"], ["白紙","백지","아무것도 쓰지 않은 하얀 종이"]
+    ];
+
+    // 출제 범위: 7급 시험은 8급 50자 + 7급 신규 100자 = 150자
+    function examPool() { return [...HANJA_SETS[8], ...HANJA_SETS[7]]; }
+    // "수레 거/차" → "차", "배울 학" → "학"
+    function eumOf(item) { return item.m.split(' ').pop().split('/').pop(); }
+
+    function buildExamQuestions() {
+        const pool = examPool();
+        const EUM = {};
+        pool.forEach(it => { EUM[it.h] = eumOf(it); });
+        const allEum = pool.map(it => EUM[it.h]);
+        const usedH = new Set();
+        const qs = [];
+
+        const takeHanja = n => {
+            const arr = shuffle(pool.filter(x => !usedH.has(x.h))).slice(0, n);
+            arr.forEach(x => usedH.add(x.h));
+            return arr;
+        };
+        const finish = (q, correct, wrongs) => {
+            const opts = shuffle([correct, ...wrongs]);
+            q.options = opts;
+            q.answer = opts.indexOf(correct);
+            return q;
+        };
+        const randSyl = not => shuffle(allEum.filter(s => s !== not))[0];
+
+        // 1번: 그림 → 한자
+        const pic = shuffle([...EXAM_PIC])[0];
+        usedH.add(pic.h);
+        const grp = EXAM_PIC_GROUPS.find(g => g.includes(pic.h)) || [];
+        const picWrongs = shuffle(pool.filter(x => x.h !== pic.h && !grp.includes(x.h))).slice(0, 3).map(x => x.h);
+        qs.push(finish({ type:'pic', section:'그림에 알맞은 한자를 고르시오.', stem:pic.e, optCls:'hanja-opt', review:`그림 ${pic.e}` }, pic.h, picWrongs));
+
+        // 2~8번: 한자 → 훈음
+        takeHanja(7).forEach(it => {
+            const wrongs = [];
+            const same = pool.filter(x => x.h !== it.h && EUM[x.h] === EUM[it.h]);
+            if (same.length && Math.random() < 0.6) wrongs.push(shuffle(same)[0].m);
+            shuffle(pool.filter(x => x.h !== it.h && x.m !== it.m)).forEach(x => {
+                if (wrongs.length < 3 && !wrongs.includes(x.m)) wrongs.push(x.m);
+            });
+            qs.push(finish({ type:'hun', section:'한자의 뜻(훈)과 소리(음)로 바른 것을 고르시오.', stem:it.h, optCls:'', review:it.h }, it.m, wrongs));
+        });
+
+        // 9~18번: 훈음 → 한자
+        takeHanja(10).forEach(it => {
+            const wrongs = [];
+            const same = pool.filter(x => x.h !== it.h && EUM[x.h] === EUM[it.h]);
+            if (same.length && Math.random() < 0.6) wrongs.push(shuffle(same)[0].h);
+            shuffle(pool.filter(x => x.h !== it.h && x.m !== it.m)).forEach(x => {
+                if (wrongs.length < 3 && !wrongs.includes(x.h)) wrongs.push(x.h);
+            });
+            qs.push(finish({ type:'rev', section:'뜻과 소리에 알맞은 한자를 고르시오.', stem:it.m, optCls:'hanja-opt', review:it.m }, it.h, wrongs));
+        });
+
+        // 어휘 문제 출제
+        const usedW = new Set();
+        const takeWords = (n, onlySentence) => {
+            const arr = [];
+            shuffle([...EXAM_WORDS]).forEach(w => {
+                if (arr.length < n && !usedW.has(w[0]) && (!onlySentence || w[3])) { arr.push(w); usedW.add(w[0]); }
+            });
+            return arr;
+        };
+        const sent = takeWords(3, true);
+        const readW = takeWords(2, false);
+        const meanW = takeWords(2, false);
+
+        const readingWrongs = (w, r) => {
+            const chars = [...w], syl = [...r];
+            const trap = chars.map(c => EUM[c]).join(''); // 두음법칙·속음 함정 (예: 六月 → 육월)
+            const rest = new Set();
+            [randSyl(syl[0]) + syl[1], syl[0] + randSyl(syl[1]), syl[1] + syl[0], randSyl(syl[0]) + randSyl(syl[1])]
+                .forEach(s => { if (s !== r && s !== trap) rest.add(s); });
+            const arr = (trap !== r ? [trap] : []).concat(shuffle([...rest]));
+            while (arr.length < 3) {
+                const s = randSyl(syl[0]) + randSyl(syl[1]);
+                if (s !== r && !arr.includes(s)) arr.push(s);
+            }
+            return arr.slice(0, 3);
+        };
+        const writeWrongs = w => {
+            const [a, b] = [...w];
+            const diff = ch => shuffle(pool.filter(x => x.h !== ch && EUM[x.h] !== EUM[ch]))[0].h;
+            const set = new Set();
+            [diff(a) + b, a + diff(b), b + a, diff(a) + diff(b)].forEach(s => { if (s !== w) set.add(s); });
+            const arr = shuffle([...set]);
+            while (arr.length < 3) {
+                const s = diff(a) + diff(b);
+                if (s !== w && !arr.includes(s)) arr.push(s);
+            }
+            return arr.slice(0, 3);
+        };
+        const meaningWrongs = w => {
+            const chars = [...w[0]];
+            const wrongs = [];
+            shuffle([...EXAM_WORDS]).forEach(x => {
+                const share = [...x[0]].some(c => chars.includes(c));
+                if (wrongs.length < 3 && x[0] !== w[0] && !share && x[2] !== w[2] && !wrongs.includes(x[2])) wrongs.push(x[2]);
+            });
+            return wrongs;
+        };
+
+        // 19~20번: 어휘 독음
+        readW.forEach(w => {
+            qs.push(finish({ type:'read', section:'어휘를 바르게 읽은 것을 고르시오.', stem:w[0], optCls:'', review:w[0] }, w[1], readingWrongs(w[0], w[1])));
+        });
+        // 21~22번: 어휘 뜻
+        meanW.forEach(w => {
+            qs.push(finish({ type:'mean', section:'어휘의 뜻으로 알맞은 것을 고르시오.', stem:w[0], optCls:'', review:w[0] }, w[2], meaningWrongs(w)));
+        });
+        // 23~24번: 문장 속 밑줄 어휘 독음
+        sent.slice(0, 2).forEach(w => {
+            const html = w[3].replace('{w}', `<u class="hj">${w[0]}</u>`);
+            qs.push(finish({ type:'sentread', section:'밑줄 친 어휘를 바르게 읽은 것을 고르시오.', stem:html, optCls:'', review:w[3].replace('{w}', w[0]) }, w[1], readingWrongs(w[0], w[1])));
+        });
+        // 25번: 문장 속 밑줄 독음 → 한자어
+        const lw = sent[2];
+        const html = lw[3].replace('{w}', `<u>${lw[1]}</u>`);
+        qs.push(finish({ type:'sentwrite', section:'밑줄 친 부분을 한자로 바르게 쓴 것을 고르시오.', stem:html, optCls:'hanja-opt', review:lw[3].replace('{w}', lw[1]) }, lw[0], writeWrongs(lw[0])));
+
+        return qs;
+    }
+
+    /* ==================== 7급 모의고사 (화면 로직) ==================== */
+    const EXAM_BEST_KEY = 'hanja7_exam_best';
+    const CIRCLED = ['①', '②', '③', '④'];
+    let examQs = [], examAns = [], examIdx = 0;
+
+    function startExam() {
+        initAudio();
+        examQs = buildExamQuestions();
+        examAns = new Array(examQs.length).fill(null);
+        examIdx = 0;
+        const wrap = document.getElementById('exam-chips');
+        wrap.innerHTML = '';
+        examQs.forEach((_, i) => {
+            const c = document.createElement('div');
+            c.className = 'chip';
+            c.textContent = i + 1;
+            c.onclick = () => { examIdx = i; renderExam(); };
+            wrap.appendChild(c);
+        });
+        switchScreen('exam-screen');
+        renderExam();
+    }
+
+    function exitExam() {
+        if (confirm('시험을 중단하고 홈으로 갈까요?\n(풀던 내용은 저장되지 않습니다)')) goHome();
+    }
+
+    function updateExamChips() {
+        document.querySelectorAll('#exam-chips .chip').forEach((c, i) => {
+            c.classList.toggle('answered', examAns[i] !== null);
+            c.classList.toggle('current', i === examIdx);
+        });
+        const cur = document.querySelector('#exam-chips .chip.current');
+        if (cur) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
+        const answered = examAns.filter(a => a !== null).length;
+        document.getElementById('exam-answered').innerText = `푼 문제 ${answered} / ${examQs.length}`;
+    }
+
+    function renderExam() {
+        const q = examQs[examIdx];
+        const n = examQs.length;
+        document.getElementById('exam-count').innerText = `${examIdx + 1} / ${n}`;
+        document.getElementById('exam-progress-bar').style.width = `${((examIdx + 1) / n) * 100}%`;
+
+        let stemCls = 'text-big';
+        if (q.type === 'pic') stemCls = 'emoji';
+        else if (q.type === 'hun' || q.type === 'read' || q.type === 'mean') stemCls = 'hanja-big';
+        else if (q.type === 'sentread' || q.type === 'sentwrite') stemCls = 'sentence';
+
+        const twoCol = q.optCls === 'hanja-opt' && q.type !== 'sentwrite';
+        let html = `<div class="exam-card">
+            <div class="exam-section">※ ${q.section}</div>
+            <div class="exam-qnum">${examIdx + 1}번</div>
+            <div class="exam-stem ${stemCls}">${q.stem}</div>
+            <div class="exam-options ${twoCol ? 'two' : ''}">`;
+        q.options.forEach((t, i) => {
+            html += `<button class="opt-btn ${q.optCls} ${examAns[examIdx] === i ? 'selected' : ''}" onclick="selectExamOption(${i})">
+                <span class="no">${CIRCLED[i]}</span><span class="txt">${t}</span></button>`;
+        });
+        html += `</div></div>`;
+        const body = document.getElementById('exam-body');
+        body.innerHTML = html;
+        body.scrollTop = 0;
+
+        document.getElementById('exam-prev').disabled = examIdx === 0;
+        const nextBtn = document.getElementById('exam-next');
+        nextBtn.innerText = examIdx === n - 1 ? '제출하기 ✅' : '다음 ➡️';
+        nextBtn.classList.toggle('submit', examIdx === n - 1);
+        updateExamChips();
+    }
+
+    function selectExamOption(i) {
+        examAns[examIdx] = i;
+        sounds.flip();
+        document.querySelectorAll('#exam-body .opt-btn').forEach((b, idx) => b.classList.toggle('selected', idx === i));
+        updateExamChips();
+    }
+
+    function examPrev() { if (examIdx > 0) { examIdx--; renderExam(); } }
+    function examNext() {
+        if (examIdx < examQs.length - 1) { examIdx++; renderExam(); }
+        else submitExam();
+    }
+
+    function loadExamBest(name) {
+        try { return (JSON.parse(localStorage.getItem(EXAM_BEST_KEY)) || {})[name] || 0; }
+        catch (e) { return 0; }
+    }
+    function saveExamBest(name, score) {
+        try {
+            const data = JSON.parse(localStorage.getItem(EXAM_BEST_KEY)) || {};
+            if (!data[name] || data[name] < score) { data[name] = score; localStorage.setItem(EXAM_BEST_KEY, JSON.stringify(data)); }
+        } catch (e) { /* 저장 불가 환경에서는 무시 */ }
+    }
+
+    function submitExam() {
+        const blank = examAns.filter(a => a === null).length;
+        if (blank > 0 && !confirm(`아직 풀지 않은 문제가 ${blank}개 있어요.\n그래도 제출할까요?`)) return;
+
+        let correct = 0;
+        examQs.forEach((q, i) => { if (examAns[i] === q.answer) correct++; });
+        const score = correct * EXAM_POINT;
+        const name = document.getElementById('nickname-input').value.trim() || '이름 없음';
+        const prevBest = loadExamBest(name);
+        saveExamBest(name, score);
+
+        let msg;
+        if (score === 100) msg = '🎉 만점이에요! 대단해요!';
+        else if (score >= 90) msg = '🏅 훌륭해요!';
+        else if (score >= 70) msg = '👍 합격권이에요! (70점 이상 / 앱 기준)';
+        else msg = '💪 조금만 더 연습하면 돼요!';
+        if (score >= 70) sounds.clear(); else sounds.gameover();
+
+        let review = '';
+        examQs.forEach((q, i) => {
+            if (examAns[i] === q.answer) return;
+            const mine = examAns[i] === null ? '(풀지 않음)' : `${CIRCLED[examAns[i]]} ${q.options[examAns[i]]}`;
+            review += `<div class="rv-item">
+                <div class="rv-q"><b>${i + 1}번</b> ${q.review}</div>
+                <div class="rv-mine">내 답: ${mine}</div>
+                <div class="rv-ans">정답: ${CIRCLED[q.answer]} ${q.options[q.answer]}</div>
+            </div>`;
+        });
+        if (!review) review = '<div class="rv-perfect">틀린 문제가 없어요! 🎊</div>';
+
+        document.getElementById('exam-result-body').innerHTML = `
+            <div class="result-card">
+                <div class="result-title">📝 7급 모의고사 결과</div>
+                <div class="result-score">${score}<span>점</span></div>
+                <div class="result-sub">맞힌 문제 ${correct} / ${examQs.length} · 문항당 ${EXAM_POINT}점</div>
+                <div class="result-msg">${msg}</div>
+                <div class="result-best">${name} 님의 최고 점수: ${Math.max(prevBest, score)}점${score > prevBest && prevBest > 0 ? ' (신기록!)' : ''}</div>
+            </div>
+            <div class="rv-title">❌ 틀린 문제 확인 (${examQs.length - correct}개)</div>
+            ${review}`;
+        switchScreen('exam-result-screen');
+        document.getElementById('exam-result-scroll').scrollTop = 0;
     }
 
     /* ==================== 획순 가이드 애니메이션 ==================== */
